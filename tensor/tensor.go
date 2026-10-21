@@ -9,7 +9,7 @@ type Tensor struct {
 func NewTensor(data []float32, shape ...int) *Tensor {
 	totalEle := num_el(shape)
 
-	if len(data) < totalEle {
+	if len(data) != totalEle {
 		panic("tensor.New: data length does not match shape")
 	}
 
