@@ -40,3 +40,15 @@ func TestStride3D(t *testing.T) {
 		}
 	}
 }
+
+func TestAdd(t *testing.T){
+	t1 := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3)
+	t2 := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3)
+
+	newT := Add(t1, t2)
+	for i, v := range newT.data{
+		if v != t1.data[i] + t2.data[i]{
+			t.Fatalf("expected %v got %v", t1.data[i] + t2.data[i], v)
+		}
+	}
+}

@@ -16,27 +16,6 @@ func NewTensor(data []float32, shape ...int) *Tensor {
 	return &Tensor{data: data, shape: shape, stride: computeStrides(shape)}
 }
 
-// num_el = total number of elements for a shape.
-func num_el(shape []int) int {
-	n := 1
-	for _, s := range shape {
-		n *= s
-	}
-	return n
-}
-
-// computeStrides: for shape [2,3] -> strides [3,1].
-// Moving one row jumps 3 items, moving one column jumps 1.
-func computeStrides(shape []int) []int {
-	strides := make([]int, len(shape))
-	stride := 1
-	for i := len(shape) - 1; i >= 0; i-- {
-		strides[i] = stride
-		stride *= shape[i]
-	}
-	return strides
-}
-
 func (t *Tensor) At(positions ...int) float32 {
 	offset := 0
 	for i, v := range positions {
@@ -44,4 +23,17 @@ func (t *Tensor) At(positions ...int) float32 {
 	}
 
 	return t.data[offset]
+}
+
+func Add(a, b *Tensor) *Tensor {
+	if !sameShape(a.shape, b.shape) {
+		panic("tensor: shape of a and b is not the same")
+	}
+	outData := make([]float32, len(a.data))
+	copy(outData, a.data)
+	for i, v := range b.data{
+		outData[i] += v;
+	}
+
+	return NewTensor(outData, a.shape...)
 }
