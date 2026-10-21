@@ -29,3 +29,14 @@ func TestNewTensorPanic(t *testing.T) {
 	_ = NewTensor([]float32{1, 2, 3, 4, 5, 6}, 1, 3)
 
 }
+
+func TestStride3D(t *testing.T) {
+	data := NewTensor([]float32{1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6, 1, 2, 3, 4, 5, 6}, 2, 3, 4)
+	want := []int{12, 4, 1}
+
+	for i, v := range want {
+		if data.stride[i] != v {
+			t.Fatalf("expected %v got %v", v, data.stride[i])
+		}
+	}
+}
