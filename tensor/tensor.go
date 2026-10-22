@@ -38,6 +38,8 @@ func Add(a, b *Tensor) *Tensor {
 	return NewTensor(outData, a.shape...)
 }
 func Multiply(a, b *Tensor) *Tensor {
+	a = Contiguous(a)
+	b = Contiguous(b)
 	if len(a.shape) != 2 || len(b.shape) != 2 {
 		panic("tensor.Matmul: both tensors must be 2D")
 	}
@@ -58,4 +60,14 @@ func Multiply(a, b *Tensor) *Tensor {
 		}
 	}
 	return NewTensor(out, m, n)
+}
+func Transpose(t *Tensor) *Tensor {
+	if len(t.shape) != 2 {
+		panic("tensor.Transpose: shape is not 2")
+	}
+	return &Tensor{
+		data:   t.data,
+		shape:  []int{t.shape[1], t.shape[0]},
+		stride: []int{t.stride[1], t.stride[0]},
+	}
 }

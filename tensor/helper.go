@@ -34,16 +34,30 @@ func sameShape(shapeA, shapeB []int) bool {
 
 	return true
 }
+func (t *Tensor) IsContiguous() bool {
+	want := computeStrides(t.shape)
+	for i := range want {
+		if t.stride[i] != want[i] {
+			return false
+		}
+	}
+	return true
+}
 
-//func multiplyShapeCheck(shapeA, shapeB []int) bool {
-//	if len(shapeA) != len(shapeB) {
-//		return false
-//	}
-//
-//	l := len(shapeA)
-//	if shapeA[l-1] != shapeB[l-2]{
-//		return false
-//	}
-//
-//	return true
-//}
+// Contiguous returns t itself if already contiguous, else a packed copy.
+func Contiguous(t *Tensor) *Tensor {
+	if t.IsContiguous() {
+		return t
+	}
+	if len(t.shape) != 2 {
+		panic("tensor.Contiguous: only 2D for now")
+	}
+	rows, cols := t.shape[0], t.shape[1]
+	out := make([]float32, rows*cols)
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
+			out[i*cols+j] = t.At(i, j)
+		}
+	}
+	return NewTensor(out, rows, cols)
+}

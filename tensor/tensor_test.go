@@ -12,8 +12,9 @@ func TestStrides(t *testing.T) {
 
 func TestAt(t *testing.T) {
 	data := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3)
+	td := Transpose(data)
 
-	if data.At(1, 2) != 6 {
+	if td.At(2, 1) != 6 {
 		t.Fatalf("expected 3 got %v", data.At(1, 3))
 	}
 }
@@ -88,4 +89,15 @@ func TestMultiplyShapeMismatch(t *testing.T) {
 	}()
 
 	Multiply(t1, i)
+}
+func TestMultiplyWithTranspose(t *testing.T) {
+	a := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3)
+	got := Multiply(a, Transpose(a)) // [2,3] x [3,2] = [2,2]
+
+	want := []float32{14, 32, 32, 77}
+	for i := range want {
+		if got.data[i] != want[i] {
+			t.Fatalf("got %v, want %v", got.data, want)
+		}
+	}
 }
