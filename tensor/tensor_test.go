@@ -101,3 +101,13 @@ func TestMultiplyWithTranspose(t *testing.T) {
 		}
 	}
 }
+
+func TestNewShapeError(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expected panic because shape will not match")
+		}
+	}()
+	a := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3)
+	ReShape(a, 3, 1)
+}

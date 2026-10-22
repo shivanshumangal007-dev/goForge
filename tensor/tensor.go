@@ -71,3 +71,13 @@ func Transpose(t *Tensor) *Tensor {
 		stride: []int{t.stride[1], t.stride[0]},
 	}
 }
+func ReShape(t *Tensor, shape ...int) *Tensor {
+	totalEle := num_el(shape)
+	if len(t.data) != totalEle {
+		panic("tensor.ReShape: shape lengths do not match")
+	}
+
+	t = Contiguous(t)
+
+	return NewTensor(t.data, shape...)
+}
