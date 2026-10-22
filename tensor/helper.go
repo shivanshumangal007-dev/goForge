@@ -26,11 +26,24 @@ func sameShape(shapeA, shapeB []int) bool {
 		return false
 	}
 
-	for i, v := range shapeA{
-		if v != shapeB[i]{
+	for i, v := range shapeA {
+		if v != shapeB[i] {
 			return false
 		}
 	}
 
 	return true
 }
+
+//func multiplyShapeCheck(shapeA, shapeB []int) bool {
+//	if len(shapeA) != len(shapeB) {
+//		return false
+//	}
+//
+//	l := len(shapeA)
+//	if shapeA[l-1] != shapeB[l-2]{
+//		return false
+//	}
+//
+//	return true
+//}

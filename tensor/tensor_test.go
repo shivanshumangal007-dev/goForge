@@ -64,3 +64,28 @@ func TestAddShapeMismatch(t *testing.T) {
 	t2 := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 3, 2)
 	Add(t1, t2)
 }
+func TestMultiply(t *testing.T) {
+	t1 := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 3, 2)
+	i := NewTensor([]float32{1, 0, 0, 1}, 2, 2)
+
+	m := Multiply(t1, i)
+
+	for i, v := range m.data {
+		if v != t1.data[i] {
+			t.Fatalf("expected %f got %f", t1.data[i], v)
+		}
+	}
+}
+
+func TestMultiplyShapeMismatch(t *testing.T) {
+	t1 := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3)
+	i := NewTensor([]float32{1, 0, 0, 1}, 2, 2)
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("MultiplyShapeMismatch did not panic")
+		}
+	}()
+
+	Multiply(t1, i)
+}
