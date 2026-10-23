@@ -36,3 +36,17 @@ func TestBackward(t *testing.T) {
 		t.Fatalf("got %v %v %v, want 3 4 1", a.Grad, b.Grad, c.Grad)
 	}
 }
+func TestSub(t *testing.T) {
+	a := NewVal(4)
+	b := NewVal(3)
+	m := Mul(a, b)
+	c := NewVal(2)
+	d := Sub(m, c)
+
+	d.Backward()
+
+	if a.Grad != 3 || b.Grad != 4 || c.Grad != -1 {
+		t.Fatalf("got %v %v %v, want 3 4 -1", a.Grad, b.Grad, c.Grad)
+	}
+
+}

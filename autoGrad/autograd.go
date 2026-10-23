@@ -62,3 +62,15 @@ func Mul(a, b *Value) *Value {
 	}
 	return out
 }
+func Sub(a, b *Value) *Value {
+	out := &Value{
+		Data: a.Data - b.Data,
+		prev: []*Value{a, b},
+	}
+
+	out.backward = func() {
+		a.Grad += out.Grad
+		b.Grad += -1 * out.Grad
+	}
+	return out
+}
