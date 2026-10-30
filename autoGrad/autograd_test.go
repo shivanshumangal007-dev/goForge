@@ -88,3 +88,22 @@ func TestTanh(t *testing.T) {
 		t.Fatalf("tanh at 1: got grad %v, want about 0.42", b.Grad)
 	}
 }
+
+func TestGradCheck(t *testing.T) {
+	// f(x) = tanh(x*x + 1)
+	build := func(x float64) *Value {
+		v := NewVal(x)
+		return Tanh(Add(Mul(v, v), NewVal(1)))
+	}
+
+	x := 0.5
+	v := NewVal(x)
+	out := Tanh(Add(Mul(v, v), NewVal(1)))
+	out.Backward()
+
+	want := numericalGrad(func(x float64) float64 { return build(x).Data }, x)
+
+	if math.Abs(v.Grad-want) > 1e-6 {
+		t.Fatalf("autograd %v vs numerical %v", v.Grad, want)
+	}
+}
