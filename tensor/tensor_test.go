@@ -121,3 +121,16 @@ func TestZeroTensor(t *testing.T) {
 		}
 	}
 }
+
+func TestAddInPlace(t *testing.T) {
+	a := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3)
+	b := NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3)
+
+	AddInPlace(a, b)
+
+	for i := range a.Data {
+		if a.Data[i] != (float32(2 * (i + 1))) {
+			t.Fatalf("expected %d got %v", 2*(i+1), a.Data[i])
+		}
+	}
+}
