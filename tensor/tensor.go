@@ -1,19 +1,19 @@
 package tensor
 
 type Tensor struct {
-	data   []float32
+	Data   []float32
 	shape  []int // [rows, coloumn]
 	stride []int
 }
 
-func NewTensor(data []float32, shape ...int) *Tensor {
+func NewTensor(Data []float32, shape ...int) *Tensor {
 	totalEle := num_el(shape)
 
-	if len(data) != totalEle {
-		panic("tensor.New: data length does not match shape")
+	if len(Data) != totalEle {
+		panic("tensor.New: Data length does not match shape")
 	}
 
-	return &Tensor{data: data, shape: shape, stride: computeStrides(shape)}
+	return &Tensor{Data: Data, shape: shape, stride: computeStrides(shape)}
 }
 
 func (t *Tensor) At(positions ...int) float32 {
@@ -22,16 +22,16 @@ func (t *Tensor) At(positions ...int) float32 {
 		offset += t.stride[i] * v
 	}
 
-	return t.data[offset]
+	return t.Data[offset]
 }
 
 func Add(a, b *Tensor) *Tensor {
 	if !sameShape(a.shape, b.shape) {
 		panic("tensor: shape of a and b is not the same")
 	}
-	outData := make([]float32, len(a.data))
-	copy(outData, a.data)
-	for i, v := range b.data {
+	outData := make([]float32, len(a.Data))
+	copy(outData, a.Data)
+	for i, v := range b.Data {
 		outData[i] += v
 	}
 
@@ -54,7 +54,7 @@ func Multiply(a, b *Tensor) *Tensor {
 		for j := 0; j < n; j++ {
 			var sum float32
 			for p := 0; p < k; p++ {
-				sum += a.data[i*k+p] * b.data[p*n+j]
+				sum += a.Data[i*k+p] * b.Data[p*n+j]
 			}
 			out[i*n+j] = sum
 		}
@@ -66,18 +66,44 @@ func Transpose(t *Tensor) *Tensor {
 		panic("tensor.Transpose: shape is not 2")
 	}
 	return &Tensor{
-		data:   t.data,
+		Data:   t.Data,
 		shape:  []int{t.shape[1], t.shape[0]},
 		stride: []int{t.stride[1], t.stride[0]},
 	}
 }
 func ReShape(t *Tensor, shape ...int) *Tensor {
 	totalEle := num_el(shape)
-	if len(t.data) != totalEle {
+	if len(t.Data) != totalEle {
 		panic("tensor.ReShape: shape lengths do not match")
 	}
 
 	t = Contiguous(t)
 
-	return NewTensor(t.data, shape...)
+	return NewTensor(t.Data, shape...)
+}
+
+func (t *Tensor) Shape() []int {
+	return t.shape
+}
+
+func Zeros(shape ...int) *Tensor {
+	l := num_el(shape)
+	zeroArr := make([]float32, l)
+	return NewTensor(zeroArr, shape...)
+}
+func AddInPlace(a, b *Tensor) {
+	shape1 := a.shape
+	shape2 := b.shape
+	if len(shape1) != len(shape2) {
+		panic("tensor.AddInPlace: shape lengths do not match")
+	}
+	for i := range shape1 {
+		if shape1[i] != shape2[i] {
+			panic("tensor.AddInPlace: shape lengths do not match")
+		}
+	}
+
+	for i, _ := range a.Data {
+		a.Data[i] += b.Data[i]
+	}
 }
