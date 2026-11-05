@@ -18,3 +18,120 @@ func TestNewVar(t *testing.T) {
 		}
 	}
 }
+func TestSumForward(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3))
+	out := Sum(a)
+
+	if out.Data.Data[0] != 21 {
+		t.Fatalf("got %v, want 21", out.Data.Data[0])
+	}
+}
+
+func TestSumBackward(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3))
+	out := Sum(a)
+	out.Backward()
+
+	for i, g := range a.Grad.Data {
+		if g != 1 {
+			t.Fatalf("a.Grad[%d] = %v, want 1", i, g)
+		}
+	}
+}
+func TestAddVarForward(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4}, 2, 2))
+	b := NewVar(tensor.NewTensor([]float32{10, 20, 30, 40}, 2, 2))
+
+	out := AddVar(a, b)
+
+	want := []float32{11, 22, 33, 44}
+	for i := range want {
+		if out.Data.Data[i] != want[i] {
+			t.Fatalf("got %v, want %v", out.Data.Data, want)
+		}
+	}
+}
+
+func TestAddVarBackward(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4}, 2, 2))
+	b := NewVar(tensor.NewTensor([]float32{10, 20, 30, 40}, 2, 2))
+
+	Sum(AddVar(a, b)).Backward()
+
+	for i := range a.Grad.Data {
+		if a.Grad.Data[i] != 1 || b.Grad.Data[i] != 1 {
+			t.Fatalf("a.Grad=%v b.Grad=%v, want all 1", a.Grad.Data, b.Grad.Data)
+		}
+	}
+}
+
+func TestAddVarReuse(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4}, 2, 2))
+
+	Sum(AddVar(a, a)).Backward()
+
+	for i, g := range a.Grad.Data {
+		if g != 2 {
+			t.Fatalf("a.Grad[%d] = %v, want 2", i, g)
+		}
+	}
+}
+
+func TestAddVarShapeMismatch(t *testing.T) {
+	defer func() {
+		if r := recover(); r == nil {
+			t.Fatal("expected panic")
+		}
+	}()
+	a := NewVar(tensor.Zeros(2, 2))
+	b := NewVar(tensor.Zeros(2, 3))
+	AddVar(a, b)
+}
+
+func TestMulVarForward(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4}, 2, 2))
+	b := NewVar(tensor.NewTensor([]float32{5, 6, 7, 8}, 2, 2))
+
+	out := MulVar(a, b)
+	want := []float32{5, 12, 21, 32}
+
+	for i := range out.Data.Data {
+		if out.Data.Data[i] != want[i] {
+			t.Fatalf("got %v, want %v", out.Grad.Data, want)
+		}
+	}
+}
+
+func TestMulVarBackward(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4}, 2, 2))
+	b := NewVar(tensor.NewTensor([]float32{5, 6, 7, 8}, 2, 2))
+
+	out := MulVar(a, b)
+	out.Backward()
+	for i := range out.Grad.Data {
+		if out.Grad.Data[i] != 1 {
+			t.Fatalf("a.Grad[%d] = %v, want 1", i, out.Grad.Data)
+		}
+	}
+
+	for i := range a.Grad.Data {
+		if a.Grad.Data[i] != b.Data.Data[i] {
+			t.Fatalf("a.Grad[%d] = %f, want %f", i, a.Grad.Data[i], b.Data.Data[i])
+		}
+		if b.Grad.Data[i] != a.Data.Data[i] {
+			t.Fatalf("b.Grad[%d] = %f, want %f", i, b.Grad.Data[i], a.Data.Data[i])
+		}
+	}
+}
+func TestMulVarReuse(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4}, 2, 2))
+
+	Sum(MulVar(a, a)).Backward()
+
+	want := []float32{2, 4, 6, 8}
+	for i := range want {
+		if a.Grad.Data[i] != want[i] {
+			t.Fatalf("a.Grad = %v, want %v", a.Grad.Data, want)
+		}
+	}
+}
