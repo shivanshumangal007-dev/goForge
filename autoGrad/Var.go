@@ -75,7 +75,7 @@ func AddVar(a, b *Var) *Var {
 	return out
 }
 func MulVar(a, b *Var) *Var {
-	t :=  tensor.Zeros(a.Data.Shape()...)
+	t := tensor.Zeros(a.Data.Shape()...)
 	for i := range a.Data.Data {
 		t.Data[i] = a.Data.Data[i] * b.Data.Data[i]
 	}
@@ -90,6 +90,24 @@ func MulVar(a, b *Var) *Var {
 		for i := range out.Grad.Data {
 			a.Grad.Data[i] += out.Grad.Data[i] * b.Data.Data[i]
 			b.Grad.Data[i] += out.Grad.Data[i] * a.Data.Data[i]
+		}
+	}
+
+	return out
+}
+
+func ReLuVar(a *Var) *Var {
+	out := &Var{
+		Data: a.Data.Relu(),
+		Grad: tensor.Zeros(a.Grad.Shape()...),
+		prev: []*Var{a},
+	}
+
+	out.backward = func() {
+		for i := range out.Grad.Data {
+			if a.Data.Data[i] > 0 {
+				a.Grad.Data[i] += out.Grad.Data[i]
+			}
 		}
 	}
 

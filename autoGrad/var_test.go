@@ -135,3 +135,40 @@ func TestMulVarReuse(t *testing.T) {
 		}
 	}
 }
+func TestReLUVarForwardBackward(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{-1, 2, 0, 3}, 2, 2))
+	out := ReLuVar(a)
+
+	wantOut := []float32{0, 2, 0, 3}
+	for i := range wantOut {
+		if out.Data.Data[i] != wantOut[i] {
+			t.Fatalf("forward: got %v, want %v", out.Data.Data, wantOut)
+		}
+	}
+
+	// the input must be untouched
+	if a.Data.Data[0] != -1 {
+		t.Fatalf("ReLU modified its input: %v", a.Data.Data)
+	}
+
+	Sum(out).Backward()
+
+	wantGrad := []float32{0, 1, 0, 1}
+	for i := range wantGrad {
+		if a.Grad.Data[i] != wantGrad[i] {
+			t.Fatalf("backward: got %v, want %v", a.Grad.Data, wantGrad)
+		}
+	}
+}
+
+func TestReLUVarAllNegative(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{-2, -1, -3, -4}, 2, 2))
+
+	Sum(ReLuVar(a)).Backward()
+
+	for i, g := range a.Grad.Data {
+		if g != 0 {
+			t.Fatalf("a.Grad[%d] = %v, want 0", i, g)
+		}
+	}
+}

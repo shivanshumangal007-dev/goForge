@@ -107,3 +107,15 @@ func AddInPlace(a, b *Tensor) {
 		a.Data[i] += b.Data[i]
 	}
 }
+func (t *Tensor) Relu() *Tensor {
+	newData := make([]float32, len(t.Data))
+	for i, d := range t.Data {
+		if d > 0 {
+			newData[i] = d
+			continue
+		}
+		newData[i] = 0
+	}
+
+	return NewTensor(newData, t.shape...)
+}
