@@ -172,3 +172,44 @@ func TestReLUVarAllNegative(t *testing.T) {
 		}
 	}
 }
+
+func TestMultiplyVarBackward(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3))
+	b := NewVar(tensor.NewTensor([]float32{7, 8, 9, 10, 11, 12}, 3, 2))
+	L := Sum(MatmulVar(a, b))
+	L.Backward()
+	wantL := []float32{415}
+	wantA := []float32{15, 19, 23, 15, 19, 23}
+	wantB := []float32{5, 5, 7, 7, 9, 9}
+
+	for i := range wantL {
+		if L.Data.Data[i] != wantL[i] {
+			t.Fatalf("multiply: got %v, want %v", L.Data.Data, wantL)
+		}
+	}
+
+	for i := range wantA {
+		if a.Grad.Data[i] != wantA[i] {
+			t.Fatalf("a.Grad[%d] = %v, want %v", i, a.Grad.Data, wantA)
+		}
+	}
+	for i := range wantB {
+		if b.Grad.Data[i] != wantB[i] {
+			t.Fatalf("a.Grad[%d] = %v, want %v", i, b.Grad.Data, wantB)
+		}
+	}
+}
+func TestMultiplyVarForward(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4, 5, 6}, 2, 3))
+	b := NewVar(tensor.NewTensor([]float32{7, 8, 9, 10, 11, 12}, 3, 2))
+	L := MatmulVar(a, b)
+	L.Backward()
+
+	wantL := []float32{58, 64, 139, 154}
+
+	for i := range wantL {
+		if L.Data.Data[i] != wantL[i] {
+			t.Fatalf("multiply: got %v, want %v", L.Data.Data, wantL)
+		}
+	}
+}

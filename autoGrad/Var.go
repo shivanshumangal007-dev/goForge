@@ -113,3 +113,20 @@ func ReLuVar(a *Var) *Var {
 
 	return out
 }
+func MatmulVar(a, b *Var) *Var {
+	out := &Var{
+		Data: tensor.Multiply(a.Data, b.Data),
+		prev: []*Var{a, b},
+	}
+
+	out.Grad = tensor.Zeros(out.Data.Shape()...)
+	out.backward = func() {
+		dA := tensor.Multiply(out.Grad, tensor.Transpose(b.Data))
+		dB := tensor.Multiply(tensor.Transpose(a.Data), out.Grad)
+
+		tensor.AddInPlace(a.Grad, dA)
+		tensor.AddInPlace(b.Grad, dB)
+	}
+
+	return out
+}
