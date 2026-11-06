@@ -37,7 +37,19 @@ func Add(a, b *Tensor) *Tensor {
 
 	return NewTensor(outData, a.shape...)
 }
-func Multiply(a, b *Tensor) *Tensor {
+func Sub(a, b *Tensor) *Tensor {
+	if !sameShape(a.shape, b.shape) {
+		panic("tensor: shape of a and b is not the same")
+	}
+	outData := make([]float32, len(a.Data))
+	copy(outData, a.Data)
+	for i, v := range b.Data {
+		outData[i] -= v
+	}
+
+	return NewTensor(outData, a.shape...)
+}
+func Multiply(a *Tensor, b *Tensor) *Tensor {
 	a = Contiguous(a)
 	b = Contiguous(b)
 	if len(a.shape) != 2 || len(b.shape) != 2 {
@@ -107,6 +119,7 @@ func AddInPlace(a, b *Tensor) {
 		a.Data[i] += b.Data[i]
 	}
 }
+
 func (t *Tensor) Relu() *Tensor {
 	newData := make([]float32, len(t.Data))
 	for i, d := range t.Data {

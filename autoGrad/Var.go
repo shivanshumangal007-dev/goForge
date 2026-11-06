@@ -130,3 +130,18 @@ func MatmulVar(a, b *Var) *Var {
 
 	return out
 }
+
+func SubVar(a, b *Var) *Var {
+	out := &Var{
+		Data: tensor.Sub(a.Data, b.Data),
+		Grad: tensor.Zeros(a.Grad.Shape()...),
+		prev: []*Var{a, b},
+	}
+	out.backward = func() {
+		for i := range out.Grad.Data {
+			a.Grad.Data[i] += out.Grad.Data[i]
+			b.Grad.Data[i] -= out.Grad.Data[i]
+		}
+	}
+	return out
+}
