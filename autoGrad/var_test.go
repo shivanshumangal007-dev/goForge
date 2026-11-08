@@ -213,3 +213,17 @@ func TestMultiplyVarForward(t *testing.T) {
 		}
 	}
 }
+func TestMeanVar(t *testing.T) {
+	a := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4}, 2, 2))
+	out := MeanVar(a)
+
+	out.Backward()
+	if out.Data.Data[0] != 2.5 {
+		t.Fatalf("mean: got %v, want 2.5", out.Data.Data[0])
+	}
+	for i := range a.Grad.Data {
+		if a.Grad.Data[i] != 0.25 {
+			t.Fatalf("mean: got %v, want 0.25", out.Grad.Data[i])
+		}
+	}
+}

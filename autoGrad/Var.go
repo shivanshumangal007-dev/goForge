@@ -145,3 +145,21 @@ func SubVar(a, b *Var) *Var {
 	}
 	return out
 }
+
+func MeanVar(a *Var) *Var {
+	sum := float32(0)
+	for _, x := range a.Data.Data {
+		sum += x
+	}
+	n := float32(len(a.Data.Data))
+	out := &Var{
+		Data: tensor.NewTensor([]float32{sum / n}, 1),
+		Grad: tensor.Zeros(1),
+	}
+	out.backward = func() {
+		for i := range a.Grad.Data {
+			a.Grad.Data[i] += out.Grad.Data[0] / n
+		}
+	}
+	return out
+}
