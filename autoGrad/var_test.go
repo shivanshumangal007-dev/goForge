@@ -227,3 +227,27 @@ func TestMeanVar(t *testing.T) {
 		}
 	}
 }
+func TestAddBias(t *testing.T) {
+	x := NewVar(tensor.NewTensor([]float32{1, 2, 3, 4}, 2, 2))
+	b := NewVar(tensor.NewTensor([]float32{10, 20}, 2))
+
+	out := AddBias(x, b)
+
+	want := []float32{11, 22, 13, 24}
+	for i := range want {
+		if out.Data.Data[i] != want[i] {
+			t.Fatalf("forward: got %v, want %v", out.Data.Data, want)
+		}
+	}
+
+	Sum(out).Backward()
+
+	for i, g := range x.Grad.Data {
+		if g != 1 {
+			t.Fatalf("x.Grad[%d] = %v, want 1", i, g)
+		}
+	}
+	if b.Grad.Data[0] != 2 || b.Grad.Data[1] != 2 {
+		t.Fatalf("bias.Grad = %v, want [2 2]", b.Grad.Data)
+	}
+}
