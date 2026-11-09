@@ -163,3 +163,34 @@ func MeanVar(a *Var) *Var {
 	}
 	return out
 }
+func AddBias(x, bias *Var) *Var {
+	xs, bs := x.Data.Shape(), bias.Data.Shape()
+	if len(xs) != 2 || len(bs) != 1 || xs[1] != bs[0] {
+		panic("autograd.AddBias: need x [n,d] and bias [d]")
+	}
+	rows, cols := xs[0], xs[1]
+
+	data := tensor.Zeros(rows, cols)
+	for i := 0; i < rows; i++ {
+		for j := 0; j < cols; j++ {
+			data.Data[i*cols+j] = x.Data.Data[i*cols+j] + bias.Data.Data[j]
+		}
+	}
+
+	out := &Var{
+		Data: data,
+		Grad: tensor.Zeros(rows, cols),
+		prev: []*Var{x, bias},
+	}
+
+	out.backward = func() {
+		for i := 0; i < rows; i++ {
+			for j := 0; j < cols; j++ {
+				g := out.Grad.Data[i*cols+j]
+				x.Grad.Data[i*cols+j] += g
+				bias.Grad.Data[j] += g // summed over all rows because of the loop over i
+			}
+		}
+	}
+	return out
+}
