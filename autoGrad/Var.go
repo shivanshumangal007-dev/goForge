@@ -155,6 +155,7 @@ func MeanVar(a *Var) *Var {
 	out := &Var{
 		Data: tensor.NewTensor([]float32{sum / n}, 1),
 		Grad: tensor.Zeros(1),
+		prev: []*Var{a},
 	}
 	out.backward = func() {
 		for i := range a.Grad.Data {
